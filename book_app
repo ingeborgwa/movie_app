@@ -1,0 +1,98 @@
+// import { StatusBar } from 'expo-status-bar';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, TextInput, View, Button, TouchableOpacity } from 'react-native';
+
+
+
+const App = () => {
+
+  const [books, setBooks] = useState([])
+  const [text, onChangeText] = useState('')
+  
+
+  function getBooks(){
+
+    fetch(`http://openlibrary.org/search.json?q=${text}&limit=20`)
+      .then((response) => response.json())
+      .then((books) => {
+        books.docs.map(item => {
+          console.log(books)
+          console.log(item.title)
+          
+        }) 
+        setBooks(books.docs)
+        // console.log(books)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    }
+
+
+
+  return (
+    <View style={styles.wrapper}>
+
+      <View>
+        <Text style={styles.text}>Søk opp din favorittbok</Text>
+        <TextInput 
+          onChangeText={onChangeText}
+          value={text}
+          style={styles.input}
+        />
+        <TouchableOpacity 
+        onPress={getBooks}>
+          <Text>Søk</Text>
+        </TouchableOpacity>
+      </View>
+     
+      <View>
+        <Text style={styles.text}>Resultat</Text>
+        <View>
+          {books && books.map((item) => (
+            <View>
+              <Text>
+              {item.title}
+              </Text>
+              <Text>
+                {item.author_name}
+              </Text>
+            </View>
+            
+          ))}
+        </View>
+      </View>
+      
+    </View>
+
+  )
+};
+
+
+
+const styles = StyleSheet.create({
+
+  wrapper: {
+    height: 400, 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 10,
+  },
+
+  text: {
+    fontSize: 22,
+    textAlign: 'center',
+  },
+
+  input: {
+    height: 40,
+    borderWidth: 1,
+  }
+
+})
+
+
+
+
+export default App;

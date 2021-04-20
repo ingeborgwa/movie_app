@@ -1,0 +1,195 @@
+import { Text, StyleSheet, Modal, View, Pressable, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AntDesign } from '@expo/vector-icons'; 
+
+const STORAGE_KEY = '@list'
+
+
+const WatchList = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [list, setList] = useState([])
+
+
+  //localStorage
+
+  useEffect(() => {
+      const getData = async () => {
+          try {
+              const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
+              if(jsonValue != null){
+                  const parsedJson = JSON.parse(jsonValue);
+                  setList(parsedJson);
+              }
+          } catch (error){
+              console.log(error)
+          }
+      };
+      getData()
+  }, []);
+
+
+  useEffect(() => {
+      const storeData = async (list) => {
+          try {
+              const jsonValue = JSON.stringify(list);
+              await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
+          } catch (error){
+              console.log(error)
+          }
+      };
+      storeData(list);
+  }, [list]);
+
+
+  const deleteData = (index) => {
+    setList (list.filter((list, x) => {
+        return index !== x;
+      })
+    )
+    
+  }
+
+  
+  
+
+
+
+  return(
+    <ScrollView >
+      <Text>Din filmliste</Text>
+      <View style={styles.centeredView}>
+        <Modal
+          animationType='slide'
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Filmtittel</Text> 
+              <Text style={styles.modalText}>Info om filmen</Text> 
+              <Pressable
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Text style={styles.textStyle}>Lukk</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+        <Pressable
+          style={[styles.button, styles.buttonOpen]}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.textStyle}>Her kommer filmene</Text>
+          
+            {list && list.map((item) => (
+              <View key={item.imdbID}>
+                  <View>
+                      <Text>{item.Title}</Text>
+                      <Image style={styles.image} source={{uri: `${item.Poster}`}} />
+                      <TouchableOpacity
+                          onPress={() => deleteData(item)}
+                      >
+                        <AntDesign 
+                          name="check" 
+                          size={24}
+                          color="black" />
+                      </TouchableOpacity>
+                  </View>
+              </View>
+            ))}
+
+          
+          <Text style={styles.textStyle}>Om filmen</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
+  )
+}
+
+const styles = StyleSheet.create({
+
+  wrapper: {
+    height: 400, 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 10,
+  },
+
+  text: {
+    fontSize: 22,
+    textAlign: 'center',
+  },
+
+  input: {
+    height: 40,
+    borderWidth: 1,
+  },
+
+  image:{
+    height: 200,
+    width: 130,
+  },
+
+
+
+  //Modal
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2
+  },
+
+  buttonOpen: {
+    // height: 100,
+    backgroundColor: "#F194FF",
+  },
+
+  buttonClose: {
+    backgroundColor: "#2196F3",
+  },
+
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
+
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
+  }
+
+
+})
+
+
+export default WatchList;
